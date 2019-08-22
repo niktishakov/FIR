@@ -33,7 +33,7 @@ namespace FIR
             {
                 if (Math.Abs(i) == (_size - 1) / 2) 
                     H_d.Add(0);
-                    else if (Math.Abs(i) <= 0.0) 
+                    else if (i == 0) 
                         H_d.Add(2 * Math.PI * Fc);
                         else 
                             H_d.Add(Math.Sin(2 * Math.PI * Fc * i) / (Math.PI * i));

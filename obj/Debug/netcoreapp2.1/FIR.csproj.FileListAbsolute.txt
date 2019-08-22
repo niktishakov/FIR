@@ -9,3 +9,4 @@ c:\Users\Nikita\Documents\GitHub\FIR\obj\Debug\netcoreapp2.1\FIR.AssemblyInfoInp
 c:\Users\Nikita\Documents\GitHub\FIR\obj\Debug\netcoreapp2.1\FIR.AssemblyInfo.cs
 c:\Users\Nikita\Documents\GitHub\FIR\obj\Debug\netcoreapp2.1\FIR.dll
 c:\Users\Nikita\Documents\GitHub\FIR\obj\Debug\netcoreapp2.1\FIR.pdb
+c:\Users\Nikita\Documents\GitHub\FIR\bin\Debug\netcoreapp2.1\Accord.dll.config
