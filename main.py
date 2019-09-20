@@ -4,7 +4,6 @@ import math
 import random
 
 random.seed()
-omega = 2
 pi = math.pi
 cos = math.cos
 sin = math.sin
@@ -12,33 +11,27 @@ ceil = math.ceil
 floor = math.floor
 fabs = math.fabs
 sqrt = math.sqrt
+lg = math.log10
 
 
 def Polyharmonic1(t):
-    return (sin(2 * pi * 0.05 * t) +
-            50 * sin(2 * pi * 0.1 * t) +
-            10 * sin(2 * pi * 0.5 * t) +
-            omega * random.randint(1, 500))
+    return (10 * sin(0.3 * pi * t) +
+            10 * sin(0.1 * pi * t) +
+            10 * sin(0.001 * pi * t))
 
 
-def Polyharmonic2(t):
-    return sin(t) * 3
-
-
-def low_pass_filter(n, Fc):
-    # if fabs(i) >= fabs(floor(size / 2)):
-    #     return 0
+def low_pass_filter(n, omega_c):
     if n == 0:
-        return 2 * pi * Fc
+        return omega_c / pi
     else:
-        return sin(2 * pi * Fc * n) / (pi * n)
+        return sin(omega_c * n) / (pi * n)
 
 
-def high_pass_filter(n, Fc):
+def high_pass_filter(n, omega_c):
     if n == 0:
-        return 1 - 2 * pi * Fc
+        return 1 - omega_c/pi
     else:
-        return -sin(2 * pi * Fc * n) / (pi * n)
+        return - sin(omega_c * n) / (pi * n)
 
 
 def bandpass_filter(n, f1, f2, w1, w2):
@@ -55,13 +48,37 @@ def barrage_filter(n, f1, f2, w1, w2):
         return sin(w1 * n) / (pi * n) - sin(w2 * n) / (pi * n)
 
 
-def kaiser_window(omega_s, omega_p, omega_a, A_a, is_high):
+def_filters = {
+    'low': low_pass_filter,
+    'high': high_pass_filter,
+    'band': bandpass_filter,
+    'barrage': barrage_filter
+}
+
+
+def kaiser_window(omega_s, omega_p, omega_a, A_o, type="low"):
+    # omega_s - частота дискретизации
+    # omega_p - полоса пропускания
+    # omega_a - полоса заграждения
+    # A_o - параметр, определяющий A_a, A_p
     H = []  # Импульсная характеристика фильтра
     H_d = []  # Идеальная импульсная характеристика
     W = []  # Весовая функция
 
-    filter = high_pass_filter if is_high else low_pass_filter
-    Fc = (omega_p + omega_a) / (2 * omega_s)  # Частота среза
+    try:
+        filter = def_filters[type]
+    except KeyError as e:
+        raise ValueError('Undefined filter type: {}'.format(e.args[0]))
+
+    delta1 = pow(10, -0.05 * A_o)
+    delta2 = (pow(10, 0.05 * A_o) - 1) / (pow(10, 0.05 * A_o) + 1)
+    delta = min(delta1, delta2)
+    A_a = -20 * lg(delta)   # Минимальное затухание в полосе задерживания
+
+    # Максимально допустимая пульсация в полосе пропускания
+    # A_p = 20 * lg((1 + delta) / (1 - delta))
+
+    omega_c = (omega_p + omega_a) / 2
     D = 0.9222 if (A_a <= 21) else (A_a - 7.95) / 14.36
     alpha = (0.0 if A_a <= 21 else
              0.5842 * pow(A_a - 21, 0.4) + 0.07886 * (A_a - 21) if A_a <= 50 else
@@ -69,10 +86,10 @@ def kaiser_window(omega_s, omega_p, omega_a, A_a, is_high):
 
     size = ceil(omega_s * D / (omega_a - omega_p) * 0.5) * 2 + 1  # Длина фильтра
     start, fin = -floor(size / 2), floor(size / 2)
-    print("start, fin:", start, fin)
+    print("size, start, fin:", size, start, fin)
 
     for n in range(start, fin + 1):
-        H_d.append(filter(n, Fc))
+        H_d.append(filter(n, omega_c))
         # весовая функция Кайзера
         beta = alpha * sqrt(1 - pow(2 * n / (size - 1), 2))
         # i0 - модифицированная функция Бесселя 1-го рода 0-го порядка
@@ -89,7 +106,7 @@ def kaiser_window(omega_s, omega_p, omega_a, A_a, is_high):
     return H
 
 
-def hamming_window(alpha, is_high):
+def hamming_window(size, alpha, Fc, type="low"):
     if alpha < 0 or alpha > 1:
         return False
 
@@ -97,14 +114,14 @@ def hamming_window(alpha, is_high):
     H_d = []  # Идеальная импульсная характеристика
     W = []  # Весовая функция
 
-    filter = high_pass_filter if is_high else low_pass_filter
-    # Fc = (omega_p + omega_a) / (2 * omega_s)
-    Fc = 0.1245  # Частота среза
-    # size = ceil(omega_s * D / (omega_a - omega_p) * 0.5) * 2 + 1  # Длина фильтра
-    size = 21
+    try:
+        filter = def_filters[type]
+    except KeyError as e:
+        raise ValueError('Undefined filter type: {}'.format(e.args[0]))
+
     start, fin = -floor(size / 2), floor(size / 2)
 
-    print("start, fin:", start, fin)
+    print("size, start, fin:", size, start, fin)
 
     for n in range(start, fin + 1):
         H_d.append(filter(n, Fc))
@@ -136,32 +153,30 @@ def response(input, H):
     return output
 
 
-H1 = kaiser_window(50, 20, 50, 30, False)
-H2 = hamming_window(0.54, False)
-t = list(range(100))
+H1 = kaiser_window(1, 0.15, 0.3, 30, "low")
+H2 = hamming_window(5, 0.54, 0.001, "low")
+t = list(range(200))
 input = []
 output1 = []
 output2 = []
 
 for i in t:
     input.append(Polyharmonic1(i))
-    # input.append(Polyharmonic2(i))
-    output1.append(response(input, H1))
-    output2.append(response(input, H2))
+    if i >= len(H1):
+        output1.append(response(input, H1))
+    if i >= len(H2):
+        output2.append(response(input, H2))
 
-deltaY = 1500
-deltaX = 10
-plt.xlim(0, len(t))
-plt.ylim(-deltaY, deltaY)
-plt.plot(t, input)
-plt.show()
 
-plt.xlim(0, len(t))
-plt.ylim(-deltaY, deltaY)
-plt.plot(t, output1)
-plt.show()
+def plotGraphic(func, delta_y, name="Function"):
+    t = list(range(len(func)))
+    plt.xlim(0, len(func))
+    plt.ylim(-delta_y, delta_y)
+    plt.plot(t, func)
+    plt.title(name)
+    plt.show()
 
-plt.xlim(0, len(t))
-plt.ylim(-deltaY, deltaY)
-plt.plot(t, output2)
-plt.show()
+
+plotGraphic(input, 35, "input")
+plotGraphic(output1, 35, "output1")
+plotGraphic(output2, 35, "output2")
