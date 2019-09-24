@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
+from scipy.fftpack import fft
 import numpy as np
+
 import math
 import random
 
 random.seed()
-pi = math.pi
-cos = math.cos
-sin = math.sin
+pi = np.pi
+cos = np.cos
+sin = np.sin
 ceil = math.ceil
 floor = math.floor
 fabs = math.fabs
@@ -14,10 +16,10 @@ sqrt = math.sqrt
 lg = math.log10
 
 
-def Polyharmonic1(t):
-    return (10 * sin(0.3 * pi * t) +
-            10 * sin(0.1 * pi * t) +
-            10 * sin(0.001 * pi * t))
+def polyharmonic1(t):
+    return (10 * sin(0.5 * pi * t) +
+            10 * sin(0.3 * pi * t) +
+            10 * sin(0.1 * pi * t))
 
 
 def low_pass_filter(n, omega_c):
@@ -29,7 +31,7 @@ def low_pass_filter(n, omega_c):
 
 def high_pass_filter(n, omega_c):
     if n == 0:
-        return 1 - omega_c/pi
+        return 1 - omega_c / pi
     else:
         return - sin(omega_c * n) / (pi * n)
 
@@ -73,7 +75,7 @@ def kaiser_window(omega_s, omega_p, omega_a, A_o, type="low"):
     delta1 = pow(10, -0.05 * A_o)
     delta2 = (pow(10, 0.05 * A_o) - 1) / (pow(10, 0.05 * A_o) + 1)
     delta = min(delta1, delta2)
-    A_a = -20 * lg(delta)   # Минимальное затухание в полосе задерживания
+    A_a = -20 * lg(delta)  # Минимальное затухание в полосе задерживания
 
     # Максимально допустимая пульсация в полосе пропускания
     # A_p = 20 * lg((1 + delta) / (1 - delta))
@@ -161,22 +163,36 @@ output1 = []
 output2 = []
 
 for i in t:
-    input.append(Polyharmonic1(i))
-    if i >= len(H1):
-        output1.append(response(input, H1))
-    if i >= len(H2):
-        output2.append(response(input, H2))
+    input.append(polyharmonic1(i))
+    # if i >= len(H1):
+    output1.append(response(input, H1))
+    # if i >= len(H2):
+    output2.append(response(input, H2))
 
 
 def plotGraphic(func, delta_y, name="Function"):
     t = list(range(len(func)))
-    plt.xlim(0, len(func))
+    plt.xlim(-2, len(func))
     plt.ylim(-delta_y, delta_y)
     plt.plot(t, func)
     plt.title(name)
     plt.show()
 
 
-plotGraphic(input, 35, "input")
-plotGraphic(output1, 35, "output1")
-plotGraphic(output2, 35, "output2")
+def plotFFTGraphic(N, T, y, name="FFT Function"):
+    x = np.linspace(0.0, N * T, N)
+    yf = fft(y)
+    xf = np.linspace(0.0, 1.0 / (2.0 * T), N // 2)
+    plt.plot(xf, 2.0 / N * np.abs(yf[0:N // 2]))
+    plt.grid()
+    plt.title(name)
+    plt.show()
+
+
+plotGraphic(input, 35, "Input")
+plotGraphic(output1, 35, "Output After Kaiser")
+plotGraphic(output2, 35, "Output After Hamming")
+
+plotFFTGraphic(len(input), 1, input, "FFT Input")
+plotFFTGraphic(len(output1), 1, output1, "FFT Output After Kaiser")
+plotFFTGraphic(len(output2), 1, output2, "FFT Output After Hamming")
