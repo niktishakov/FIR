@@ -128,7 +128,7 @@
       <workItem from="1569522248262" duration="1557000" />
       <workItem from="1569529433758" duration="321000" />
       <workItem from="1569774940715" duration="10383000" />
-      <workItem from="1569843169129" duration="3655000" />
+      <workItem from="1569843169129" duration="4561000" />
     </task>
     <task id="LOCAL-00001" summary="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting">
       <created>1569020738879</created>
@@ -144,7 +144,14 @@
       <option name="project" value="LOCAL" />
       <updated>1569284936975</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Parallel algorithm for 'response',&#10;fixed bandpass and barrage filter">
+      <created>1569847385241</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1569847385241</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -166,7 +173,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting" />
     <MESSAGE value="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response" />
-    <option name="LAST_COMMIT_MESSAGE" value="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response" />
+    <MESSAGE value="Parallel algorithm for 'response',&#10;fixed bandpass and barrage filter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Parallel algorithm for 'response',&#10;fixed bandpass and barrage filter" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/FIR$FIR.coverage" NAME="FIR Coverage Results" MODIFIED="1569780904356" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

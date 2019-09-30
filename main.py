@@ -63,7 +63,7 @@ def kaiser_window(type):
     N = 1 if type == "low" or type == "high" else 2
 
     omega_c = []
-    order = 3
+    order = 1
     print("Kaiser Window:")
     for i in range(N):
         print(i + 1, "| omega_s:")
@@ -89,7 +89,7 @@ def kaiser_window(type):
                  0.5842 * pow(A_a - 21, 0.4) + 0.07886 * (A_a - 21) if A_a <= 50 else
                  0.1102 * (A_a - 8.7))
 
-        order = ceil(omega_s * D / (omega_a - omega_p) * 0.5) * 2 + 1  # Длина фильтра
+        order = max(order, ceil(omega_s * D / (omega_a - omega_p) * 0.5) * 2 + 1)  # Длина фильтра
 
     n = yield order, omega_c
 
