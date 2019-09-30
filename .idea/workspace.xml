@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="44845e53-da02-43a2-a900-bf8fb33ed6e4" name="Default Changelist" comment="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting">
-      <change beforePath="$PROJECT_DIR$/.idea/FIR.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/FIR.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="44845e53-da02-43a2-a900-bf8fb33ed6e4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -124,7 +121,14 @@
       <workItem from="1569240753004" duration="2399000" />
       <workItem from="1569243186452" duration="753000" />
       <workItem from="1569280923019" duration="940000" />
-      <workItem from="1569281899098" duration="2759000" />
+      <workItem from="1569281899098" duration="3315000" />
+      <workItem from="1569319151676" duration="769000" />
+      <workItem from="1569361132513" duration="7797000" />
+      <workItem from="1569447223578" duration="3923000" />
+      <workItem from="1569522248262" duration="1557000" />
+      <workItem from="1569529433758" duration="321000" />
+      <workItem from="1569774940715" duration="10383000" />
+      <workItem from="1569843169129" duration="3655000" />
     </task>
     <task id="LOCAL-00001" summary="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting">
       <created>1569020738879</created>
@@ -133,7 +137,14 @@
       <option name="project" value="LOCAL" />
       <updated>1569020738879</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response">
+      <created>1569284936975</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1569284936975</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,9 +165,10 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting" />
+    <MESSAGE value="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response" />
+    <option name="LAST_COMMIT_MESSAGE" value="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/FIR$FIR.coverage" NAME="FIR Coverage Results" MODIFIED="1569019417677" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FIR$FIR.coverage" NAME="FIR Coverage Results" MODIFIED="1569780904356" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
