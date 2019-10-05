@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="44845e53-da02-43a2-a900-bf8fb33ed6e4" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/Nikita.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -16,6 +18,7 @@
   </component>
   <component name="ProjectId" id="1QQs5ixIduGKt1jmbckjZC3lhCi" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -128,7 +131,14 @@
       <workItem from="1569522248262" duration="1557000" />
       <workItem from="1569529433758" duration="321000" />
       <workItem from="1569774940715" duration="10383000" />
-      <workItem from="1569843169129" duration="4561000" />
+      <workItem from="1569843169129" duration="5219000" />
+      <workItem from="1569928471738" duration="2517000" />
+      <workItem from="1570024787149" duration="596000" />
+      <workItem from="1570036162180" duration="33000" />
+      <workItem from="1570048140080" duration="510000" />
+      <workItem from="1570205326833" duration="1752000" />
+      <workItem from="1570218384095" duration="780000" />
+      <workItem from="1570221489912" duration="18559000" />
     </task>
     <task id="LOCAL-00001" summary="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting">
       <created>1569020738879</created>
@@ -151,7 +161,14 @@
       <option name="project" value="LOCAL" />
       <updated>1569847385241</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="to get max order for kaiser window">
+      <created>1569870502002</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1569870502002</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,9 +191,10 @@
     <MESSAGE value="fixed low_pass_filter, kaiser window; &#10;using of normal test params; &#10;shift on the 'firSize' length of &#10;the top output's elements;&#10;local function for plotting" />
     <MESSAGE value="Using special module 'scipy.fftpack';&#10;Visualization of the spectrum of &#10;the input and output response" />
     <MESSAGE value="Parallel algorithm for 'response',&#10;fixed bandpass and barrage filter" />
-    <option name="LAST_COMMIT_MESSAGE" value="Parallel algorithm for 'response',&#10;fixed bandpass and barrage filter" />
+    <MESSAGE value="to get max order for kaiser window" />
+    <option name="LAST_COMMIT_MESSAGE" value="to get max order for kaiser window" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/FIR$FIR.coverage" NAME="FIR Coverage Results" MODIFIED="1569780904356" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FIR$FIR.coverage" NAME="FIR Coverage Results" MODIFIED="1570230965324" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
