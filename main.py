@@ -20,13 +20,11 @@ barrier = None
 
 
 def polyharmonic(t):
-    return (10 * sin(0.7 * pi * t) +
+    return (10 * sin(0.9 * pi * t) +
             10 * sin(0.6 * pi * t) +
-            10 * sin(0.5 * pi * t) +
             10 * sin(0.4 * pi * t) +
-            10 * sin(0.3 * pi * t) +
-            10 * sin(0.2 * pi * t) +
             10 * sin(0.1 * pi * t))
+
 
 def delta_function(t):
     return 1 if t == 0 else 0
@@ -39,13 +37,6 @@ def low_pass_filter(n, omega_c):
         return sin(omega_c[0] * n) / (pi * n)
 
 
-def high_pass_filter(n, omega_c):
-    if n == 0:
-        return 1 - omega_c[0] / pi
-    else:
-        return -sin(omega_c[0] * n) / (pi * n)
-
-
 def bandpass_filter(n, omega_c):
     if n == 0:
         return (omega_c[1] - omega_c[0]) / pi
@@ -53,31 +44,22 @@ def bandpass_filter(n, omega_c):
         return sin(omega_c[1] * n) / (pi * n) - sin(omega_c[0] * n) / (pi * n)
 
 
-def barrage_filter(n, omega_c):
-    if n == 0:
-        return 1 - (omega_c[1] - omega_c[0]) / pi
-    else:
-        return sin(omega_c[0] * n) / (pi * n) - sin(omega_c[1] * n) / (pi * n)
-
-
 def_filters = {
     'low': low_pass_filter,
-    'high': high_pass_filter,
     'band': bandpass_filter,
-    'barrage': barrage_filter
 }
 
 
 def kaiser_window(f_type):
-    N = 1 if f_type == "low" or f_type == "high" else 2
+    N = 1 if f_type == "low" else 2
     omega_c = []
     order = alpha = 1
 
     for i in range(N):
         omega_s = 1  # omega_s - частота дискретизации
-        omega_p = 0.2 + i * 0.1  # omega_p - полоса пропускания
-        omega_a = 0.3 + i * 0.1  # omega_a - полоса заграждения
-        A_o = 30 * (i + 1)  # A_o - определяет A_a, A_p
+        omega_p = 0.225 + i * 0.2  # omega_p - полоса пропускания
+        omega_a = 0.275 + i * 0.2  # omega_a - полоса заграждения
+        A_o = 30  # A_o - определяет A_a, A_p
 
         delta1 = pow(10, -0.05 * A_o)
         delta2 = (pow(10, 0.05 * A_o) - 1) / (pow(10, 0.05 * A_o) + 1)
@@ -103,13 +85,13 @@ def kaiser_window(f_type):
 
 
 def hamming_window(f_type):
-    N = 1 if f_type == "low" or f_type == "high" else 2
+    N = 1 if f_type == "low" else 2
     alpha = 0.54
     omega_c = []
 
     for i in range(N):
-        omega_c.append(0.25 + 0.1 * i)
-    order = 17
+        omega_c.append(0.4 + 0.1 * i)
+    order = 33
 
     n = yield order, omega_c
     while True:
@@ -171,14 +153,13 @@ def response(input, H):
     return output
 
 
-def sequence(t, H1, H2):
+def sequence(t, H1, H2, func):
     input = []
     output1 = [0.] * t
     output2 = [0.] * t
 
     for i in range(t):
-        input.append(polyharmonic(i))
-        # input.append(delta_function(i))
+        input.append(func(i))
         output1[i] = response(input, H1)
         output2[i] = response(input, H2)
 
@@ -192,29 +173,28 @@ def worker(out1, out2, input, inp_size, H1, H2):
     fir_size = len(H1)
     for i in range(fir_size):
         if inp_size - 1 - i >= 0:
-            out1[inp_size-1] += H1[i] * input[inp_size - 1 - i]
+            out1[inp_size - 1] += H1[i] * input[inp_size - 1 - i]
 
     fir_size = len(H2)
     for i in range(fir_size):
         if inp_size - 1 - i >= 0:
-            out2[inp_size-1] += H2[i] * input[inp_size - 1 - i]
+            out2[inp_size - 1] += H2[i] * input[inp_size - 1 - i]
 
     barrier.wait()
 
 
-def parallel(t, H1, H2, thread_num):
+def parallel(t, H1, H2, func, thread_num):
     input = []
-    output1 = [0.]*t
-    output2 = [0.]*t
+    output1 = [0.] * t
+    output2 = [0.] * t
 
     global barrier
-    barrier = threading.Barrier(thread_num+1)
-    thread = [None]*thread_num
+    barrier = threading.Barrier(thread_num + 1)
+    thread = [None] * thread_num
 
-    for i in range(floor(t/thread_num)):
+    for i in range(floor(t / thread_num)):
         for p in range(thread_num):
-            # input.append(polyharmonic(i*thread_num + p))
-            input.append(delta_function(i*thread_num + p))
+            input.append(func(i * thread_num + p))
             thread[p] = threading.Thread(target=worker, args=(output1, output2, input, len(input), H1, H2))
             thread[p].start()
         barrier.wait()
@@ -222,11 +202,11 @@ def parallel(t, H1, H2, thread_num):
     if len(input) < t:
         print("LAST PART..")
         start = len(input)
-        barrier = threading.Barrier(t-start + 1)
+        barrier = threading.Barrier(t - start + 1)
         for p in range(start, t):
             input.append(polyharmonic(p))
-            thread[p-start] = threading.Thread(target=worker, args=(output1, output2, input, p, H1, H2))
-            thread[p-start].start()
+            thread[p - start] = threading.Thread(target=worker, args=(output1, output2, input, p, H1, H2))
+            thread[p - start].start()
         barrier.wait()
 
     return input, output1, output2
@@ -241,10 +221,10 @@ def plotGraphic(func, delta_y, name="Function"):
     plt.show()
 
 
-def plotFFTGraphic(y, T, name="FFT Function"):
+def plotFFTGraphic(y, name="FFT Function"):
     N = len(y)
     yf = fft(y)
-    xf = np.linspace(0.0, 1.0 / (2.0 * T), N // 2)
+    xf = np.linspace(0.0, 1.0, N // 2)
     plt.plot(xf, 2.0 / N * np.abs(yf[0:N // 2]))
     plt.grid()
     plt.title(name)
@@ -252,26 +232,30 @@ def plotFFTGraphic(y, T, name="FFT Function"):
 
 
 def main():
-    H1 = getFir("kaiser", "low")
-    H2 = getFir("hamming", "low")
+    H1 = getFir("kaiser", "band")
+    H2 = getFir("hamming", "band")
 
-    seq_time = time.time()*1.
-    input, output1, output2 = sequence(4000, H1, H2)
-    seq_time = time.time()*1. - seq_time
+    par_time = time.time() * 1.
+    input, output1, output2 = parallel(4000, H1, H2, polyharmonic, 200)
+    par_time = time.time() * 1. - par_time
 
-    # par_time = time.time()*1.
-    # input, output1, output2 = parallel(4000, H1, H2, 200)
-    # par_time = time.time()*1. - par_time
-    #
-    # print("BOOST: ", par_time/seq_time)
+    plotGraphic(input, 35, "Input")
+    plotGraphic(output1, 35, "Output After Kaiser")
+    plotGraphic(output2, 35, "Output After Hamming")
 
-    plotGraphic(input, 50, "Input")
-    plotGraphic(output1, 50, "Output After Kaiser")
-    plotGraphic(output2, 50, "Output After Hamming")
+    plotFFTGraphic(input, "FFT Input")
+    plotFFTGraphic(output1, "FFT Output After Kaiser")
+    plotFFTGraphic(output2, "FFT Output After Hamming")
 
-    plotFFTGraphic(input, 1, "FFT Input")
-    plotFFTGraphic(output1, 1, "FFT Output After Kaiser")
-    plotFFTGraphic(output2, 1, "FFT Output After Hamming")
+    seq_time = time.time() * 1.
+    input, output3, output4 = sequence(4000, H1, H2, delta_function)
+    seq_time = time.time() * 1. - seq_time
+
+    plotFFTGraphic(input, "FFT Input")
+    plotFFTGraphic(output3, "FFT Output After Kaiser")
+    plotFFTGraphic(output4, "FFT Output After Hamming")
+
+    print("BOOST: ", par_time / seq_time)
 
 
 if __name__ == "__main__":
