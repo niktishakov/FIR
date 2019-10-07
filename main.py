@@ -57,9 +57,9 @@ def kaiser_window(f_type):
 
     for i in range(N):
         omega_s = 1  # omega_s - частота дискретизации
-        omega_p = 0.225 + i * 0.2  # omega_p - полоса пропускания
-        omega_a = 0.275 + i * 0.2  # omega_a - полоса заграждения
-        A_o = 30  # A_o - определяет A_a, A_p
+        omega_p = 0.94 + i * 0.025  # omega_p - полоса пропускания
+        omega_a = 0.96 + i * 0.025  # omega_a - полоса заграждения
+        A_o = 20  # A_o - определяет A_a, A_p
 
         delta1 = pow(10, -0.05 * A_o)
         delta2 = (pow(10, 0.05 * A_o) - 1) / (pow(10, 0.05 * A_o) + 1)
@@ -71,9 +71,9 @@ def kaiser_window(f_type):
 
         omega_c.append((omega_p + omega_a) / 2)
         D = 0.9222 if (A_a <= 21) else (A_a - 7.95) / 14.36
-        alpha = (0.0 if A_a <= 21 else
-                 0.5842 * pow(A_a - 21, 0.4) + 0.07886 * (A_a - 21) if A_a <= 50 else
-                 0.1102 * (A_a - 8.7))
+        alpha = min(alpha, 0.0 if A_a <= 21 else
+            0.5842 * pow(A_a - 21, 0.4) + 0.07886 * (A_a - 21) if A_a <= 50 else
+            0.1102 * (A_a - 8.7))
 
         order = max(order, ceil(omega_s * D / (omega_a - omega_p) * 0.5) * 2 + 1)  # Длина фильтра
 
@@ -90,8 +90,8 @@ def hamming_window(f_type):
     omega_c = []
 
     for i in range(N):
-        omega_c.append(0.4 + 0.1 * i)
-    order = 33
+        omega_c.append(0.95 + 0.025 * i)
+    order = 49
 
     n = yield order, omega_c
     while True:
@@ -200,7 +200,7 @@ def parallel(t, H1, H2, func, thread_num):
         barrier.wait()
 
     if len(input) < t:
-        print("LAST PART..")
+        # print("LAST PART..")
         start = len(input)
         barrier = threading.Barrier(t - start + 1)
         for p in range(start, t):
@@ -214,7 +214,7 @@ def parallel(t, H1, H2, func, thread_num):
 
 def plotGraphic(func, delta_y, name="Function"):
     t = list(range(len(func)))
-    plt.xlim(-2, 200)
+    plt.xlim(200, 400)
     plt.ylim(-delta_y, delta_y)
     plt.plot(t, func)
     plt.title(name)
@@ -235,27 +235,20 @@ def main():
     H1 = getFir("kaiser", "band")
     H2 = getFir("hamming", "band")
 
-    par_time = time.time() * 1.
-    input, output1, output2 = parallel(4000, H1, H2, polyharmonic, 200)
-    par_time = time.time() * 1. - par_time
+    N = 1000
 
-    plotGraphic(input, 35, "Input")
-    plotGraphic(output1, 35, "Output After Kaiser")
-    plotGraphic(output2, 35, "Output After Hamming")
 
-    plotFFTGraphic(input, "FFT Input")
-    plotFFTGraphic(output1, "FFT Output After Kaiser")
-    plotFFTGraphic(output2, "FFT Output After Hamming")
+    print("N: ", N)
+    for t in range(2, 20):
+        seq_time = time.time() * 1.
+        inp, out1, out2 = sequence(N, H1, H2, polyharmonic)
+        seq_time = time.time() * 1. - seq_time
 
-    seq_time = time.time() * 1.
-    input, output3, output4 = sequence(4000, H1, H2, delta_function)
-    seq_time = time.time() * 1. - seq_time
+        par_time = time.time() * 1.
+        inp2, out3, out4 = parallel(N, H1, H2, polyharmonic, t)
+        par_time = time.time() * 1. - par_time
 
-    plotFFTGraphic(input, "FFT Input")
-    plotFFTGraphic(output3, "FFT Output After Kaiser")
-    plotFFTGraphic(output4, "FFT Output After Hamming")
-
-    print("BOOST: ", par_time / seq_time)
+        print("threads:", t, ", SPEED-UP: ", par_time / seq_time)
 
 
 if __name__ == "__main__":
