@@ -1,5 +1,5 @@
-from multiprocessing import Pool
-from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
+from multiprocessing import Pool as ThreadPool
 
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft
@@ -166,34 +166,37 @@ def sequence(t, H, func):
     for i in range(t):
         input.append(func(i))
         output.append(response(input, H))
-    end_t = time.time()*1.
+    end_t = time.time() * 1.
 
     return input, output, end_t - start_t
 
 
-def parallel(t, H, func, thread_num):
-    input = []
+def worker(input, H, pos):
+    fir_size = len(H)
+    res = 0
+
+    for i in range(fir_size):
+        if pos - 1 - i >= 0:
+            res += H[i] * input[pos - 1 - i]
+    return res
+
+
+def parallel(t, H, f, thread_num):
+    inp = []
     for i in range(t):
-        input.append(func(i))
+        inp.append(f(i))
 
-    def worker(pos):
-        fir_size = len(H)
-        res = 0
-
-        for i in range(fir_size):
-            if pos - 1 - i >= 0:
-                res += H[i] * input[pos - 1 - i]
-        return res
-
-    pool = ThreadPool(thread_num)
+    pool = ThreadPool(processes=thread_num)
+    func = partial(worker, inp, H)
+    iterable = range(1, len(inp)+1)
 
     start_t = time.time() * 1.
-    output = pool.map(worker, range(1, len(input)+1))
+    output = pool.map(func, iterable)
     pool.close()
     pool.join()
     end_t = time.time() * 1.
 
-    return input, output, end_t - start_t
+    return inp, output, end_t - start_t
 
 
 def plotGraphic(func, delta_y, name="Function"):
@@ -228,29 +231,28 @@ def error(arr1, arr2):
 
 
 def main():
-    H1 = getFir("kaiser", "band", [0.3, 0.3, 0.4])
-    H2 = getFir("hamming", "band", [21, 0.3, 0.4])
+    H1 = getFir("kaiser", "low", [0.1, 0.3])
+    H2 = getFir("hamming", "low", [21, 0.3, 0.4])
 
-    input, output1, seq_time = sequence(1000, H1, delta_function)
-    input, output2, seq_time = sequence(1000, H2, delta_function)
+    # input, output1, seq_time = sequence(100000, H1, polyharmonic)
+    # input, output2, seq_time = sequence(1000, H2, polyharmonic)
+    inp, output3, par_time = parallel(100000, H1, polyharmonic, 6)
 
-    # input, output2, par_time = parallel(1000, H1, delta_function, 4)
-    # print("Error: ", error(output1, output2))
+    # print("Error: ", error(output1, output3))
 
-    #
-    # # plotGraphic(input, 35, "input (Seq)")
-    plotGraphic(output1, 35, "low, Kaiser (Seq)")
-    plotGraphic(output2, 35, "low, Hamming (Seq)")
-    #
-    plotFFTGraphic(output1, "FFT low, Kaiser (Seq)")
-    plotFFTGraphic(output2, "FFT low, Hamming (Seq)")
+    plotGraphic(inp, 35, "input (Seq)")
+    # plotGraphic(output1, 35, "Low, Kaiser (Seq)")
+    # plotGraphic(output2, 35, "low, Hamming (Seq)")
+    # #
+    # plotFFTGraphic(output1, "FFT low, Kaiser (Seq)")
+    # plotFFTGraphic(output2, "FFT low, Hamming (Seq)")
 
     # for t in range(2, 10):
     #     print("threads:", t)
 
     # par_time = time.time() * 1.
     # par_time = time.time() * 1. - par_time
-    # plotGraphic(output2, 35, "low, Kaiser (Par)")
+    plotGraphic(output3, 35, "Low, Kaiser (Par)")
 
     # print("SPEED-UP: ", seq_time / par_time)
 
