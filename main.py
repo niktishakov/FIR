@@ -1,5 +1,7 @@
-from functools import partial
-from multiprocessing import Pool as ThreadPool
+import multiprocessing
+from sys import stdin
+from multiprocessing import Pool, Array, Process
+import mymodule
 
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft
@@ -43,7 +45,7 @@ def bandpass_filter(n, omega_c):
     if n == 0:
         return (omega_c[1] - omega_c[0]) / pi
     else:
-        return sin(omega_c[1] * n) / (pi * n) - sin(omega_c[0] * n) / (pi * n)
+        return (sin(omega_c[1] * n) - sin(omega_c[0] * n)) / (pi * n)
 
 
 def_filters = {
@@ -54,7 +56,7 @@ def_filters = {
 
 def kaiser_window(f_type, args):
     d_omega, omega_1, omega_2 = args[0] * pi, args[1] * pi, args[2] * pi if f_type == "band" else 0
-    omega_s = 2 * pi  # частота дискретизации
+    omega_s = pi  # частота дискретизации
     A_o = 0.05  # определяет A_a, A_p
 
     delta1 = pow(10, -0.05 * A_o)
@@ -97,11 +99,12 @@ def kaiser_window(f_type, args):
 def hamming_window(f_type, args):
     alpha = 0.54
     order = args[0]
-    omega_1, omega_2 = args[1] * pi, args[2] * pi if f_type == "band" else 0
+    omega_1 = args[1]*pi
+    omega_2 = args[2]*pi if f_type == "band" else 0
 
     n = yield order, [omega_1, omega_2]
     while True:
-        n = yield alpha - (1 - alpha) * cos(2 * pi * n / (order - 1))
+        n = yield alpha + (1 - alpha) * cos(2 * pi * n / (order))
 
 
 def_windows = {
@@ -171,14 +174,20 @@ def sequence(t, H, func):
     return input, output, end_t - start_t
 
 
-def worker(input, H, pos):
-    fir_size = len(H)
+def worker(pos):
+    fir_size = len(mymodule.H)
     res = 0
 
     for i in range(fir_size):
         if pos - 1 - i >= 0:
-            res += H[i] * input[pos - 1 - i]
+            res += mymodule.H[i] * mymodule.inp[pos - 1 - i]
+
     return res
+
+
+def init_process(share1, share2):
+    mymodule.inp = share1
+    mymodule.H = share2
 
 
 def parallel(t, H, f, thread_num):
@@ -186,12 +195,19 @@ def parallel(t, H, f, thread_num):
     for i in range(t):
         inp.append(f(i))
 
-    pool = ThreadPool(processes=thread_num)
-    func = partial(worker, inp, H)
-    iterable = range(1, len(inp)+1)
+    shared_inp = Array('d', len(inp), lock=False)
+    shared_H = Array('d', len(H), lock=False)
+    iterable = range(1, len(inp) + 1)
+
+    # can set data after fork
+    shared_inp = list(inp)
+    shared_H = list(H)
+
+    # fork
+    pool = Pool(processes=thread_num, initializer=init_process, initargs=(shared_inp, shared_H))
 
     start_t = time.time() * 1.
-    output = pool.map(func, iterable)
+    output = pool.map(worker, iterable)
     pool.close()
     pool.join()
     end_t = time.time() * 1.
@@ -231,30 +247,25 @@ def error(arr1, arr2):
 
 
 def main():
-    H1 = getFir("kaiser", "low", [0.1, 0.3])
-    H2 = getFir("hamming", "low", [21, 0.3, 0.4])
+    H1 = getFir("kaiser", "band", [0.25, 0.2, 0.5])
+    H2 = getFir("hamming", "band", [31, 0.2, 0.5])
 
-    # input, output1, seq_time = sequence(100000, H1, polyharmonic)
-    # input, output2, seq_time = sequence(1000, H2, polyharmonic)
-    inp, output3, par_time = parallel(100000, H1, polyharmonic, 6)
-
-    # print("Error: ", error(output1, output3))
+    inp, output1, seq_time = sequence(1000, H1, polyharmonic)
+    input, output2, seq_time = sequence(1000, H2, polyharmonic)
 
     plotGraphic(inp, 35, "input (Seq)")
-    # plotGraphic(output1, 35, "Low, Kaiser (Seq)")
-    # plotGraphic(output2, 35, "low, Hamming (Seq)")
-    # #
-    # plotFFTGraphic(output1, "FFT low, Kaiser (Seq)")
-    # plotFFTGraphic(output2, "FFT low, Hamming (Seq)")
+
+    plotGraphic(output1, 35, "Low, Kaiser (Seq)")
+    plotGraphic(output2, 35, "low, Hamming (Seq)")
+    plotFFTGraphic(output1, "FFT low, Kaiser (Seq)")
+    plotFFTGraphic(output2, "FFT low, Hamming (Seq)")
 
     # for t in range(2, 10):
     #     print("threads:", t)
+    #     inp, output3, par_time = parallel(10000, H1, polyharmonic, t)
+    #     print("error, SPEED-UP: ", error(output1, output3), seq_time / par_time)
 
-    # par_time = time.time() * 1.
-    # par_time = time.time() * 1. - par_time
-    plotGraphic(output3, 35, "Low, Kaiser (Par)")
-
-    # print("SPEED-UP: ", seq_time / par_time)
+    # plotGraphic(output3, 35, "Low, Kaiser (Par)")
 
 
 if __name__ == "__main__":
